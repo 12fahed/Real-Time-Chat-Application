@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useAuthStore } from "../store/useAuthStore"
-import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, Phone, User } from "lucide-react";
 import AuthImagePattern from "../components/AuthImagePatter"
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -162,6 +162,7 @@ const SignUpPage = () => {
   const { signup, isSigningUp, createOTP, verifyOTP } = useAuthStore();
   const [formData, setFormData] = useState({
     fullName: "",
+    phno: "",
     email: "",
     password: "",
   });
@@ -170,6 +171,14 @@ const SignUpPage = () => {
   const validateForm = () => {
     if (!formData.fullName.trim()) {
       toast.error("Full name is required");
+      return false;
+    }
+    if (!formData.phno.trim()) {
+      toast.error("Phone Number is required");
+      return false;
+    }
+    if (formData.phno.length!=10) {
+      toast.error("Phone Number should be 10 Digits");
       return false;
     }
     if (!formData.email.trim()) {
@@ -236,7 +245,7 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-screen grid lg:grid-cols-2 pt-5">
       {/* Left side */}
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
@@ -254,7 +263,7 @@ const SignUpPage = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name Input */}
             <div className="form-control">
               <label className="label">
@@ -270,6 +279,25 @@ const SignUpPage = () => {
                   placeholder="John Doe"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Phone Number */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium">Phone Number</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Phone className="size-5 text-base-content/40" />
+                </div>
+                <input
+                  type="text"
+                  className={`input input-bordered w-full pl-10`}
+                  placeholder="9876543210"
+                  value={formData.phno}
+                  onChange={(e) => setFormData({ ...formData, phno: e.target.value })}
                 />
               </div>
             </div>

@@ -68,11 +68,11 @@ export const verifyotp = async (req, res) => {
 
 export const signup = async (req, res) =>{
 
-    const { fullName, email, password } = req.body
+    const { fullName, email, password, phno} = req.body
 
     try{
         
-        if (!fullName || !email || !password){
+        if (!fullName || !email || !password || !phno){
             return res.status(400).json({message: "All Fields are rewuired"})
         }
 
@@ -90,6 +90,7 @@ export const signup = async (req, res) =>{
         const newUser = new User({
             fullName,
             email,
+            phno,
             password: hashedPassword
         })
 
