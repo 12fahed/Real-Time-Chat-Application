@@ -1,15 +1,71 @@
 import { THEMES } from "../constants";
 import { useThemeStore } from "../store/useThemeStore";
 import { Send } from "lucide-react";
+import { useState } from 'react';
 
 const PREVIEW_MESSAGES = [
-  { id: 1, content: "Hey! How's it going?", isSent: false },
-  { id: 2, content: "I'm doing great! Just working on some new features.", isSent: true },
+  { id: 1, content: "Hello Good Morning", isSent: false },
+  { id: 2, content: "Hi, good morning, how are you doing ?", isSent: true },
 ];
+
+const DropdownWithPreview = ({ themes, selectedTheme, setSelectedTheme }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
+
+  return (
+    <div className="relative w-full">
+      <button
+        className="select select-bordered w-full flex justify-between items-center p-2"
+        onClick={toggleDropdown}
+      >
+        <span>{selectedTheme?.charAt(0).toUpperCase() + selectedTheme?.slice(1)}</span>
+        <svg
+          className={`w-4 h-4 transform ${isOpen ? 'rotate-180' : ''}`}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg z-10">
+          <ul className="max-h-60 overflow-y-auto">
+            {themes.map((theme) => (
+              <li
+                key={theme}
+                className="cursor-pointer p-2 flex items-center space-x-2 hover:bg-base-200"
+                onClick={() => {
+                  setSelectedTheme(theme);
+                  setIsOpen(false);
+                }}
+              >
+                <div
+                  className="relative h-8 w-8 rounded-md overflow-hidden"
+                  data-theme={theme}
+                >
+                  <div className="absolute inset-0 grid grid-cols-4 gap-px p-1">
+                    <div className="rounded bg-primary"></div>
+                    <div className="rounded bg-secondary"></div>
+                    <div className="rounded bg-accent"></div>
+                    <div className="rounded bg-neutral"></div>
+                  </div>
+                </div>
+                <span className="text-sm">{theme?.charAt(0).toUpperCase() + theme?.slice(1)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 const SettingsPage = () => {
   const { theme, setTheme } = useThemeStore();
-
   return (
     <div className="h-screen container mx-auto px-4 pt-20 max-w-5xl">
       <div className="space-y-6">
@@ -18,30 +74,12 @@ const SettingsPage = () => {
           <p className="text-sm text-base-content/70">Choose a theme for your chat interface</p>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-          {THEMES.map((t) => (
-            <button
-              key={t}
-              className={`
-                group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors
-                ${theme === t ? "bg-base-200" : "hover:bg-base-200/50"}
-              `}
-              onClick={() => setTheme(t)}
-            >
-              <div className="relative h-8 w-full rounded-md overflow-hidden" data-theme={t}>
-                <div className="absolute inset-0 grid grid-cols-4 gap-px p-1">
-                  <div className="rounded bg-primary"></div>
-                  <div className="rounded bg-secondary"></div>
-                  <div className="rounded bg-accent"></div>
-                  <div className="rounded bg-neutral"></div>
-                </div>
-              </div>
-              <span className="text-[11px] font-medium truncate w-full text-center">
-                {t.charAt(0).toUpperCase() + t.slice(1)}
-              </span>
-            </button>
-          ))}
-        </div>
+        {/* Custom Dropdown with Preview */}
+        <DropdownWithPreview
+          themes={THEMES}
+          selectedTheme={theme}
+          setSelectedTheme={setTheme}
+        />
 
         {/* Preview Section */}
         <h3 className="text-lg font-semibold mb-3">Preview</h3>
@@ -57,7 +95,7 @@ const SettingsPage = () => {
                       J
                     </div>
                     <div>
-                      <h3 className="font-medium text-sm">John Doe</h3>
+                      <h3 className="font-medium text-sm">Fahed Khan</h3>
                       <p className="text-xs text-base-content/70">Online</p>
                     </div>
                   </div>
@@ -113,4 +151,6 @@ const SettingsPage = () => {
     </div>
   );
 };
+
+
 export default SettingsPage;
