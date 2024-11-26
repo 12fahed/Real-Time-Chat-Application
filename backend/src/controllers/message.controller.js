@@ -33,6 +33,11 @@ export const getMessages = async (req, res) =>{
             ]
         })
 
+        await Messages.updateMany(
+            { senderId: userToChatId, receiverId: myId, read: false },
+            { $set: { read: true } }
+        );
+
         res.status(200).json(messages)
     } catch(error) {
         console.log("Error in getMessages Controller", error.message)
@@ -60,6 +65,7 @@ export const sendMessage = async (req, res) => {
         receiverId,
         text,
         image: imageUrl,
+        read: false
       });
   
       await newMessage.save();

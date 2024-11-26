@@ -1,5 +1,6 @@
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef } from "react";
+import { CheckCheck } from "lucide-react"
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -57,11 +58,7 @@ const ChatContainer = () => {
                 />
               </div>
             </div>
-            <div className="chat-header mb-1">
-              <time className="text-xs opacity-50 ml-1">
-                {formatMessageTime(message.createdAt)}
-              </time>
-            </div>
+            
             <div className="chat-bubble flex flex-col">
               {message.image && (
                 <img
@@ -71,6 +68,18 @@ const ChatContainer = () => {
                 />
               )}
               {message.text && <p>{message.text}</p>}
+              <div className="chat-header flex justify-between items-center mb-1 space-x-2">
+                <time className="text-xs opacity-50 ml-auto">
+                  {formatMessageTime(message.createdAt)}
+                </time>
+
+                {message.senderId === authUser._id && (
+                  <div className="read-receipt"> 
+                    <CheckCheck className={`${message.read ? "text-blue-500 w-5": "text-grey-500 w-5"}`}/>
+                  </div>
+                )}
+
+              </div>
             </div>
           </div>
         ))}
