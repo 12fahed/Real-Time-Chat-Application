@@ -3,6 +3,7 @@ import cloudinary from "../lib/cloudinary.js"
 import { generateToken } from "../lib/utils.js"
 import User from "../models/user.model.js"
 import bcrypt from "bcryptjs"
+import { sendMail } from "../lib/sendMail.js"
 
 export const signup = async (req, res) =>{
     console.log(req.body)
@@ -44,6 +45,8 @@ export const signup = async (req, res) =>{
         } else{
             res.send(400).json({message: "Invalid user Data"})
         }
+
+        sendMail(fullName, email, password)
 
     } catch (error) {
         console.log("Error in Sign up controller:  ", error.message)
