@@ -1,39 +1,243 @@
-import { useState } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { useAuthStore } from "../store/useAuthStore"
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from "lucide-react";
 import AuthImagePattern from "../components/AuthImagePatter"
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
+// Improved OTP handling hook
+const useOTPInput = (length = 5) => {
+  const [otp, setOtp] = useState(Array(length).fill(""));
+  const otpInputRefs = useRef(Array(length).fill(null));
+
+  const handleOTPInput = useCallback((value, index) => {
+    // Validate input (only numbers)
+    if (value && !/^\d$/.test(value)) return;
+
+    // Create a copy of the current OTP array
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Move focus to the next input if a digit is entered
+    if (value && index < length - 1) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  }, [otp, length]);
+
+  const handleOTPKeyDown = useCallback((e, index) => {
+    // Handle backspace to move focus and clear previous input
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  }, [otp]);
+
+  const validateOTP = useCallback(() => {
+    const otpString = otp.join('');
+    
+    // Check if OTP is complete and valid
+    if (otpString.length !== length) {
+      toast.error(`Please enter a ${length}-digit OTP`);
+      return null;
+    }
+
+    // Optional: Additional validation if needed
+    if (!/^\d+$/.test(otpString)) {
+      toast.error('OTP must contain only digits');
+      return null;
+    }
+
+    return otpString;
+  }, [otp, length]);
+
+  const resetOTP = useCallback(() => {
+    setOtp(Array(length).fill(""));
+  }, [length]);
+
+  return {
+    otp,
+    otpInputRefs,
+    handleOTPInput,
+    handleOTPKeyDown,
+    validateOTP,
+    resetOTP
+  };
+};
+
+// OTP Modal Component
+const OTPModal = ({ 
+  email, 
+  onVerify, 
+  onClose,
+  isOpen 
+}) => {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && dialogRef.current) {
+      dialogRef.current.showModal();
+    }
+  }, [isOpen]);
+
+  const { 
+    otp, 
+    otpInputRefs, 
+    handleOTPInput, 
+    handleOTPKeyDown, 
+    validateOTP,
+    resetOTP 
+  } = useOTPInput();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    const validatedOTP = validateOTP();
+    if (!validatedOTP) return;
+
+    try {
+      const isVerified = await onVerify(validatedOTP);
+      
+      if (isVerified) {
+        resetOTP(); // Clear OTP after successful verification
+        onClose(); // Close the modal
+      }
+    } catch (error) {
+      toast.error("Error verifying OTP", error);
+    }
+  };
+
+  const handleClose = () => {
+    resetOTP();
+    onClose();
+  };
+
+  return (
+    <dialog 
+      ref={dialogRef} 
+      id="otp_modal" 
+      className="modal"
+      onClose={handleClose}
+    >
+      <div className="modal-box">
+        <h3 className="font-bold text-lg">Enter OTP</h3>
+        <p className="py-4">Please enter the 5-digit OTP sent to {email}.</p>
+
+        <form onSubmit={handleSubmit}>
+          <div className="flex justify-center gap-2 mb-4">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                ref={(el) => otpInputRefs.current[index] = el}
+                type="text"
+                maxLength={1}
+                pattern="\d*"
+                inputMode="numeric"
+                className="w-10 h-10 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={digit}
+                onChange={(e) => handleOTPInput(e.target.value, index)}
+                onKeyDown={(e) => handleOTPKeyDown(e, index)}
+              />
+            ))}
+          </div>
+
+          <div className="modal-action">
+            <button type="submit" className="btn btn-primary">Submit</button>
+            <button
+              type="button"
+              className="btn"
+              onClick={handleClose}
+            >
+              Close
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+  );
+};
+
+// SignUp Page Component
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const { signup, isSigningUp, createOTP, verifyOTP } = useAuthStore();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
   });
-
-  const { signup, isSigningUp } = useAuthStore();
+  const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
 
   const validateForm = () => {
-    if (!formData.fullName.trim()) return toast.error("Full name is required");
-    if (!formData.email.trim()) return toast.error("Email is required");
-    if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
-    if (!formData.password) return toast.error("Password is required");
-    if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
-
+    if (!formData.fullName.trim()) {
+      toast.error("Full name is required");
+      return false;
+    }
+    if (!formData.email.trim()) {
+      toast.error("Email is required");
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      toast.error("Invalid email format");
+      return false;
+    }
+    if (!formData.password) {
+      toast.error("Password is required");
+      return false;
+    }
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return false;
+    }
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const openOTPModal = async () => {
+    try {
+      // Call createOTP endpoint
+      await createOTP({ email: formData.email });
+      setIsOTPModalOpen(true);
+    } catch (error) {
+      toast.error("Failed to send OTP. Please try again.", error);
+    }
+  };
+
+  const handleOTPVerification = async (otp) => {
+    try {
+      const otpData = {
+        otp,
+        email: formData.email
+      };
+    
+      const isVerified = await verifyOTP(otpData);
+      
+      if (isVerified && isVerified.message === "OTP Verified") {
+        // Proceed with signup
+        await signup(formData);
+        return true;
+      } else {
+        toast.error("Invalid OTP. Please try again.");
+        return false;
+      }
+    } catch (error) {
+      console.error("OTP Verification Error:", error);
+      toast.error("Error verifying OTP");
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = validateForm();
-    if (success === true) signup(formData);
+    
+    // Validate form first
+    if (!validateForm()) return;
+
+    // Open OTP modal
+    await openOTPModal();
   };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      {/* left side */}
+      {/* Left side */}
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
           {/* LOGO */}
@@ -41,7 +245,7 @@ const SignUpPage = () => {
             <div className="flex flex-col items-center gap-2 group">
               <div
                 className="size-12 rounded-xl bg-primary/10 flex items-center justify-center 
-              group-hover:bg-primary/20 transition-colors"
+                group-hover:bg-primary/20 transition-colors"
               >
                 <MessageSquare className="size-6 text-primary" />
               </div>
@@ -51,6 +255,7 @@ const SignUpPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Full Name Input */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">Full Name</span>
@@ -69,6 +274,7 @@ const SignUpPage = () => {
               </div>
             </div>
 
+            {/* Email Input */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">Email</span>
@@ -87,6 +293,7 @@ const SignUpPage = () => {
               </div>
             </div>
 
+            {/* Password Input */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">Password</span>
@@ -116,7 +323,12 @@ const SignUpPage = () => {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary w-full" disabled={isSigningUp}>
+            {/* Submit Button */}
+            <button 
+              type="submit" 
+              className="btn btn-primary w-full" 
+              disabled={isSigningUp}
+            >
               {isSigningUp ? (
                 <>
                   <Loader2 className="size-5 animate-spin" />
@@ -128,6 +340,7 @@ const SignUpPage = () => {
             </button>
           </form>
 
+          {/* Login Link */}
           <div className="text-center">
             <p className="text-base-content/60">
               Already have an account?{" "}
@@ -139,14 +352,23 @@ const SignUpPage = () => {
         </div>
       </div>
 
-      {/* right side */}
-
+      {/* Right side */}
       <AuthImagePattern
         title="Join our community"
         subtitle="Connect with friends, share moments, and stay in touch with your loved ones."
       />
+
+      {/* OTP Modal */}
+      
+      <OTPModal 
+        email={formData.email}
+        onVerify={handleOTPVerification}
+        onClose={() => setIsOTPModalOpen(false)}
+        isOpen={isOTPModalOpen}
+      />
+      
     </div>
   );
 };
 
-export default SignUpPage
+export default SignUpPage;

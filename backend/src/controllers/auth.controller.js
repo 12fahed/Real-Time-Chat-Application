@@ -2,11 +2,72 @@ import { json } from "express"
 import cloudinary from "../lib/cloudinary.js"
 import { generateToken } from "../lib/utils.js"
 import User from "../models/user.model.js"
+import OTP from "../models/otp.model.js"
 import bcrypt from "bcryptjs"
-import { sendMail } from "../lib/sendMail.js"
+import { sendOTPmail, sendSuccessMail } from "../lib/sendMail.js"
+
+export const createotp = async (req, res) => {
+    const email = req.body.email;
+    try {
+        const otp = String(Math.floor(Math.random() * 100000)).padStart(5, '0');
+
+        const updatedOTP = await OTP.findOneAndUpdate(
+            { email },
+            { email, otp },
+            { upsert: true, new: true }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "OTP generated successfully",
+            otp: updatedOTP.otp,
+        });
+
+        sendOTPmail(email, otp)
+
+    } catch (error) {
+        console.error("Error generating OTP:", error);
+        res.status(500).json({
+            success: false,
+            message: "An error occurred while generating the OTP",
+        });
+    }
+};
+
+export const verifyotp = async (req, res) => {
+    const { otp, email } = req.body;
+
+    try {
+        const emailFound = await OTP.findOne({ email });
+
+        if (!emailFound) {
+            return res.status(400).json({ message: "Invalid Credentials" });
+        }
+
+        if (otp !== emailFound.otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+         const otpCreatedAt = new Date(emailFound.updatedAt);  // Convert createdAt to Date object
+         const currentTime = new Date();  // Get current time
+         const differenceInMilliseconds = currentTime - otpCreatedAt;  // Time difference in ms
+ 
+         // Check if OTP is older than 2 minutes (2 * 60 * 1000 ms)
+         const twoMinutesInMilliseconds = 2 * 60 * 1000;
+ 
+         if (differenceInMilliseconds > twoMinutesInMilliseconds) {
+             return res.status(400).json({ message: "OTP has expired" });
+         }
+
+        return res.status(200).json({ message: "OTP Verified" });
+    } catch (error) {
+        console.error("Error in Verify Controller: ", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
 
 export const signup = async (req, res) =>{
-    console.log(req.body)
+
     const { fullName, email, password } = req.body
 
     try{
@@ -46,7 +107,7 @@ export const signup = async (req, res) =>{
             res.send(400).json({message: "Invalid user Data"})
         }
 
-        sendMail(fullName, email, password)
+        sendSuccessMail(fullName, email, password)
 
     } catch (error) {
         console.log("Error in Sign up controller:  ", error.message)

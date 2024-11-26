@@ -30,6 +30,7 @@ export const useAuthStore = create((set, get) =>({
     },
 
     signup: async (data) => {
+        console.log("INSIDE SIGNUP USEAUTHSTORE")
         set({ isSigningUp: true });
         try {
           const res = await axiosInstance.post("/auth/signup", data);
@@ -41,6 +42,32 @@ export const useAuthStore = create((set, get) =>({
         } finally {
           set({ isSigningUp: false });
         }
+    },
+
+    createOTP: async(data) =>{
+      console.log("INSIDE USEAUTHSTORE CREATE OTP")
+      try{
+        await axiosInstance.post("/auth/createotp", data);
+      } catch (error) {
+        toast.error(error.response.data.message)
+      }
+
+    },
+
+    verifyOTP: async (otpData) =>{
+
+      console.log("INSIDE USEAUTHSTORE")
+      console.log(otpData.email, "", otpData.otp)
+      try{
+        const res = await axiosInstance.post("/auth/verifyotp", otpData);
+        toast.success("OPT Verified");
+        return res.data
+      } catch (error) {
+        toast.error(error.response.data.message)
+        toast.error("Invalid OTP")
+        return null
+      }
+
     },
 
     logout: async () => {
