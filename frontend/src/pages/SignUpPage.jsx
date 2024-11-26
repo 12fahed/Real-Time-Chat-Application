@@ -76,6 +76,8 @@ const OTPModal = ({
   useEffect(() => {
     if (isOpen && dialogRef.current) {
       dialogRef.current.showModal();
+    } else if(dialogRef.current) {
+      dialogRef.current.close()
     }
   }, [isOpen]);
 
@@ -120,7 +122,8 @@ const OTPModal = ({
     >
       <div className="modal-box">
         <h3 className="font-bold text-lg">Enter OTP</h3>
-        <p className="py-4">Please enter the 5-digit OTP sent to {email}.</p>
+        <p className="pt-4">Please enter the 5-digit OTP sent to {email}.</p>
+        <p className="text-sm text-base-content/70 pb-4">Please check the spam folder if the OTP is not found.</p>
 
         <form onSubmit={handleSubmit}>
           <div className="flex justify-center gap-2 mb-4">
