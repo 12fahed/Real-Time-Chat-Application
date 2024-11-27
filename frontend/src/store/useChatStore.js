@@ -63,7 +63,7 @@ export const useChatStore = create((set,get) => ({
     const socket = useAuthStore.getState().socket
     socket.off("newMessage")
   },
-
+  
   // typing: async () => {
   //   const { selectedUser } = get();
   //   const currentUser = useAuthStore.getState().user;
@@ -85,7 +85,6 @@ export const useChatStore = create((set,get) => ({
   //   }
   // },
   
-
   setSelectedUser: (selectedUser) => set({selectedUser})
 
 }));

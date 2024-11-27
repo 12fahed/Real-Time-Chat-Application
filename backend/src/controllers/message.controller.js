@@ -81,3 +81,34 @@ export const sendMessage = async (req, res) => {
       res.status(500).json({ error: "Internal server error" });
     }
 };
+
+
+export const addNewNumber = async (req, res) => {
+  try {
+    const { userId, newNumber } = req.body; // Extract userId and newNumber from the request body
+    console.log("USER: ", userId);
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (!Array.isArray(user.contacts)) {
+      user.contacts = [];
+    }
+
+    if (user?.contacts?.includes(newNumber)) {
+      return res.status(400).json({ message: "Number already exists in contacts." });
+    }
+
+    user?.contacts?.push(newNumber);
+
+    await user.save();
+
+    res.status(200).json({ message: "Number added successfully.", contacts: user.contacts });
+  } catch (error) {
+    console.error("Error in addNewNumber:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};

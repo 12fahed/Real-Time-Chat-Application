@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useAuthStore } from "../store/useAuthStore"
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, Phone, User } from "lucide-react";
-import AuthImagePattern from "../components/AuthImagePatter"
+import AnimatedConversations from "../components/AnimatedConversations"
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -279,7 +279,7 @@ const SignUpPage = () => {
                 <input
                   type="text"
                   className={`input input-bordered w-full pl-10`}
-                  placeholder="John Doe"
+                  placeholder="Fahed Khan"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 />
@@ -317,7 +317,7 @@ const SignUpPage = () => {
                 <input
                   type="email"
                   className={`input input-bordered w-full pl-10`}
-                  placeholder="you@example.com"
+                  placeholder="example@gmail.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -384,7 +384,7 @@ const SignUpPage = () => {
       </div>
 
       {/* Right side */}
-      <AuthImagePattern
+      <AnimatedConversations
         title="Join our community"
         subtitle="Connect with friends, share moments, and stay in touch with your loved ones."
       />

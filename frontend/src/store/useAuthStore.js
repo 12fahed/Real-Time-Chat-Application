@@ -146,43 +146,7 @@ export const useAuthStore = create((set, get) =>({
     //   });
     // },
 
-    connectSocket: () => {
-      const { authUser } = get();
-    
-      if (!authUser || get().socket?.connected) return;
-    
-      const socket = io(BASE_URL, {
-        query: {
-          userId: authUser._id,
-        },
-      });
-    
-      socket.connect();
-      set({ socket: socket });
-    
-      // Handle receiving online users
-      socket.on("getOnlineUsers", (userIds) => {
-        set({ onlineUsers: userIds });
-      });
-    
-      // Listen for typing events
-      socket.on("userTyping", ({ fromId }) => {
-        const typingUsers = { ...get().typingUsers, [fromId]: true };
-        set({ typingUsers });
-      });
-    
-      // Listen for stopped typing events
-      socket.on("userStoppedTyping", ({ fromId }) => {
-        const typingUsers = { ...get().typingUsers };
-        delete typingUsers[fromId]; // Remove the user from the typing state
-        set({ typingUsers });
-      });
-    },
-    
 
-    disconnectSocket: () =>{
-      if(get().socket?.connected) get().socket.disconnect()
-    },
 
     
     // typing: async (selectedUser) => {
@@ -244,6 +208,59 @@ export const useAuthStore = create((set, get) =>({
         }, 3000);
       };
     })(),
+
+    addNewNumber: async (newNumber)=>{
+      const { authUser } = get();
+        const userId = authUser._id
+        const newNumberData = {
+          newNumber,
+          userId,
+        }
+      try{
+      
+        const res = await axiosInstance.post("/messages/addnewnumber", newNumberData);
+        toast.success(res.data.message);
+      } catch(error) {
+        toast.error(error.response.data.message);
+      }
+    },
+
+    connectSocket: () => {
+      const { authUser } = get();
+    
+      if (!authUser || get().socket?.connected) return;
+    
+      const socket = io(BASE_URL, {
+        query: {
+          userId: authUser._id,
+        },
+      });
+    
+      socket.connect();
+      set({ socket: socket });
+    
+      // Handle receiving online users
+      socket.on("getOnlineUsers", (userIds) => {
+        set({ onlineUsers: userIds });
+      });
+    
+      // Listen for typing events
+      socket.on("userTyping", ({ fromId }) => {
+        const typingUsers = { ...get().typingUsers, [fromId]: true };
+        set({ typingUsers });
+      });
+    
+      // Listen for stopped typing events
+      socket.on("userStoppedTyping", ({ fromId }) => {
+        const typingUsers = { ...get().typingUsers };
+        delete typingUsers[fromId]; // Remove the user from the typing state
+        set({ typingUsers });
+      });
+    },
+
+    disconnectSocket: () =>{
+      if(get().socket?.connected) get().socket.disconnect()
+    },
     
     
 }))

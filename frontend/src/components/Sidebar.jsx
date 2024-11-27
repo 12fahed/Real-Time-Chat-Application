@@ -2,13 +2,20 @@ import { useEffect, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { Users } from "lucide-react";
+import { MessageCircle, Users } from "lucide-react";
 
 const Sidebar = () => {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
 
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, addNewNumber } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [newNumber, setNewNumber] = useState('');
+
+  const handleNewNumberSubmit = async() => {
+    await addNewNumber(newNumber)
+    setShowModal(false);
+  };
 
   useEffect(() => {
     getUsers();
@@ -81,6 +88,35 @@ const Sidebar = () => {
           <div className="text-center text-zinc-500 py-4">No online users</div>
         )}
       </div>
+
+      {/* Chat button */}
+      <button
+        onClick={() => setShowModal(true)}
+        className="fixed bottom-5 right-5 p-3 bg-blue-500 rounded-full text-white shadow-lg hover:bg-blue-600"
+      >
+        <MessageCircle className="text-2xl" /> {/* Lucid Chat Icon */}
+      </button>
+
+      {/* Modal for new number */}
+      {showModal && (
+        <dialog open className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Enter New Number</h3>
+            <input
+              type="text"
+              value={newNumber}
+              onChange={(e) => setNewNumber(e.target.value)}
+              className="input input-bordered w-full my-4"
+              placeholder="Enter new number"
+            />
+            <div className="modal-action">
+              <button onClick={handleNewNumberSubmit} className="btn">Submit</button>
+              <button onClick={() => setShowModal(false)} className="btn">Close</button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
     </aside>
   );
 };

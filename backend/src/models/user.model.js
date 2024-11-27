@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+
+        contacts: {
+            type: [String],
+            default: [],
+        },
     },
 
     {timestamps: true}
