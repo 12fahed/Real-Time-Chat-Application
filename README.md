@@ -74,7 +74,7 @@ Build a real-time chat application using the MERN Stack (MongoDB, Express, React
   - Easy integration of new features
   - Potential for group chat expansion
   - Flexible authentication mechanisms
-```
+
 
 ## Project Features
 
@@ -150,7 +150,7 @@ git clone https://github.com/12fahed/Learniee_Task.git
 cd Learniee_Task
 ```
 
-### 2. Backend Setup
+### 1. Backend Setup
 ```bash
 cd backend
 npm install
@@ -168,7 +168,7 @@ Run backend:
 npm run dev
 ```
 
-### 3. Frontend Setup
+### 2. Frontend Setup
 ```bash
 cd ../frontend
 npm install
@@ -248,4 +248,3 @@ npm run dev
 
 ## Contact
 Fahed Khan
-```
