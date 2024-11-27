@@ -59,7 +59,7 @@ const ChatContainer = () => {
               </div>
             </div>
             
-            <div className="chat-bubble flex flex-col">
+            <div className={`chat-bubble flex flex-col ${message.senderId === authUser._id ? "chat-bubble-primary":"chat-bubble-secondary"}`}>
               {message.image && (
                 <img
                   src={message.image}
