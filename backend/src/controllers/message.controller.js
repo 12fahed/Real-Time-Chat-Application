@@ -112,3 +112,30 @@ export const addNewNumber = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+
+export const getMyContacts = async (req, res) => {
+  const { userId } = req.body; // Extract the userId from the request body
+
+  try {
+    
+    const user = await User.findOne({ _id: userId });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (!Array.isArray(user.contacts) || user.contacts.length === 0) {
+      return res.status(200).json({ message: "No contacts available.", contacts: [] });
+    }
+
+    const matchingUsers = await User.find({ phno: { $in: user.contacts } }, '_id phno');
+
+    res.status(200).json({
+      message: "Contacts fetched successfully.",
+      contacts: matchingUsers,
+    });
+  } catch (error) {
+    console.error("Error in getMyContacts:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};

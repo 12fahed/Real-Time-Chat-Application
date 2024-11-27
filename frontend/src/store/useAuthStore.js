@@ -14,6 +14,7 @@ export const useAuthStore = create((set, get) =>({
     onlineUsers: [],
     socket: null,
     typingUsers: {}, // {fromId: toId}
+    myContact: [],
 
     checkAuth: async() =>{
         try{
@@ -211,7 +212,7 @@ export const useAuthStore = create((set, get) =>({
 
     addNewNumber: async (newNumber)=>{
       const { authUser } = get();
-        const userId = authUser._id
+      const userId = authUser._id
         const newNumberData = {
           newNumber,
           userId,
@@ -221,6 +222,18 @@ export const useAuthStore = create((set, get) =>({
         const res = await axiosInstance.post("/messages/addnewnumber", newNumberData);
         toast.success(res.data.message);
       } catch(error) {
+        toast.error(error.response.data.message);
+      }
+    },
+
+    getMyContacts: async() =>{
+      const userId = get().authUser._id
+      try{
+        console.log("USER IN GET: ", userId)
+        const res = await axiosInstance.post("/messages/getmycontacts", {userId});
+        console.log("MY CONTACT LIST: ", res.data.contacts)
+        set({ myContact: res.data.contacts })
+      }catch(error){
         toast.error(error.response.data.message);
       }
     },

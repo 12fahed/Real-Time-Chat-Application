@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { MessageCircle, Users } from "lucide-react";
+import { MessageCircle, User, Users } from "lucide-react";
 
 const Sidebar = () => {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
 
-  const { onlineUsers, addNewNumber } = useAuthStore();
+  const { onlineUsers, addNewNumber, getMyContacts, myContact } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [newNumber, setNewNumber] = useState('');
@@ -18,12 +18,25 @@ const Sidebar = () => {
   };
 
   useEffect(() => {
+    console.log("Sidebar loaded, calling getMyContacts...");
     getUsers();
-  }, [getUsers]);
+    getMyContacts(); 
+  }, [getUsers, getMyContacts]);
 
-  const filteredUsers = showOnlineOnly
-    ? users.filter((user) => onlineUsers?.includes(user._id))
-    : users;
+  const filteredUsersMyContact = users.filter((user) => {
+    const isInMyContacts = Array.isArray(myContact) && myContact.some((contact) => contact._id === user._id);
+
+    if (showOnlineOnly) {
+      return isInMyContacts && onlineUsers?.includes(user._id);
+    }
+
+    return isInMyContacts;
+});
+
+
+  // const filteredUsers = showOnlineOnly
+  //   ? users.filter((user) => onlineUsers?.includes(user._id))
+  //   : users;
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
@@ -50,7 +63,7 @@ const Sidebar = () => {
       </div>
 
       <div className="overflow-y-auto w-full py-3">
-        {filteredUsers.map((user) => (
+        {filteredUsersMyContact.map((user) => (
           <button
             key={user._id}
             onClick={() => setSelectedUser(user)}
@@ -84,7 +97,7 @@ const Sidebar = () => {
           </button>
         ))}
 
-        {filteredUsers?.length === 0 && (
+        {filteredUsersMyContact?.length === 0 && (
           <div className="text-center text-zinc-500 py-4">No online users</div>
         )}
       </div>
