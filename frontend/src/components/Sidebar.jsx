@@ -105,7 +105,7 @@ const Sidebar = () => {
       {/* Chat button */}
       <button
         onClick={() => setShowModal(true)}
-        className="fixed bottom-5 right-5 p-3 bg-blue-500 rounded-full text-white shadow-lg hover:bg-blue-600"
+        className="fixed bottom-5 left-5 p-3 bg-blue-500 rounded-full text-white shadow-lg hover:bg-blue-600"
       >
         <MessageCircle className="text-2xl" /> {/* Lucid Chat Icon */}
       </button>
