@@ -35,30 +35,16 @@ const AnimatedConversations = ({ title, subtitle }) => {
       status: "Seen at 08:33",
     }
   ];
-  
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [typedMessage, setTypedMessage] = useState("");
 
   useEffect(() => {
-    const currentMessage = CONVERSATIONS[currentMessageIndex]?.message || "";
-    let charIndex = 0;
+    const timeout = setTimeout(() => {
+      // Move to the next message
+      setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % CONVERSATIONS.length);
+    }, 3000); // Wait 3 seconds before showing the next message
 
-    const typeWriter = setInterval(() => {
-      if (charIndex < currentMessage.length) {
-        setTypedMessage((prev) => prev + currentMessage[charIndex]);
-        charIndex++;
-      } else {
-        clearInterval(typeWriter);
-        // Reset `typedMessage` and move to the next message after a pause
-        setTimeout(() => {
-          setTypedMessage(""); // Reset the typed message
-          setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % CONVERSATIONS.length);
-        }, 1500); // Pause for 1.5 seconds before the next message
-      }
-    }, 100);
-
-    return () => clearInterval(typeWriter);
+    return () => clearTimeout(timeout); // Clean up timeout on component unmount or state change
   }, [currentMessageIndex]);
 
   return (
@@ -67,19 +53,30 @@ const AnimatedConversations = ({ title, subtitle }) => {
         <div className="flex flex-col gap-4 mb-8">
           {CONVERSATIONS.map((conv, i) => (
             <div key={i} className={`chat chat-${conv.position}`}>
-              <div className="chat-image avatar">
-                <div className="w-10 rounded-full">
-                  <img alt={conv.user} src={conv.avatar} />
+              {/* Show avatar, time, and message only if the message is visible */}
+              {i <= currentMessageIndex && (
+                <>
+                  <div className="chat-image avatar">
+                    <div className="w-10 rounded-full">
+                      <img alt={conv.user} src={conv.avatar} />
+                    </div>
+                  </div>
+                  <div className="chat-header">
+                    {conv.user}
+                    <time className="text-xs opacity-50"> {conv.time}</time>
+                  </div>
+                  <div className="chat-bubble">
+                  {/* Show the message if it's visible */}
+                  {i <= currentMessageIndex ? (
+                    <div className="chat-message">{conv.message}</div>
+                  ) : null}
                 </div>
+                </>
+              )}
+              
+              <div className="chat-footer opacity-50">
+                {i <= currentMessageIndex ? conv.status : ""}
               </div>
-              <div className="chat-header">
-                {conv.user}
-                <time className="text-xs opacity-50"> {conv.time}</time>
-              </div>
-              <div className="chat-bubble">
-                {i === currentMessageIndex ? typedMessage : i < currentMessageIndex ? conv.message : ""}
-              </div>
-              <div className="chat-footer opacity-50">{conv.status}</div>
             </div>
           ))}
         </div>
