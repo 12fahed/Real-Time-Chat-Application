@@ -1,5 +1,5 @@
 {
-  "name": "learniee_task",
+  "name": "chat-app",
   "version": "1.0.0",
   "description": "Complete Project",
   "main": "index.js",
@@ -10,6 +10,6 @@
   "author": "Fahed Khan",
   "license": "ISC",
   "dependencies": {
-    "learniee_task": "file:"
+    "chat-app": "file:"
   }
 }
