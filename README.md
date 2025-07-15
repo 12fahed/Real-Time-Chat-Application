@@ -146,8 +146,8 @@ Build a real-time chat application using the MERN Stack (MongoDB, Express, React
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/12fahed/Learniee_Task.git
-cd Learniee_Task
+git clone https://github.com/12fahed/Real-Time-Chat-Application.git
+cd Real-Time-Chat-Application
 ```
 
 ### 1. Backend Setup
