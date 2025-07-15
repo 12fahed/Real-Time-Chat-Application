@@ -1,4 +1,4 @@
-# Real-Time Chat Application - Web Application Developer Intern Assignment
+# Real-Time Chat Web Application
 
 ## Objective
 Build a real-time chat application using the MERN Stack (MongoDB, Express, React, and Node.js) to assess skills in backend development, API design, real-time data handling, and full-stack application architecture.
